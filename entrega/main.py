@@ -1,4 +1,7 @@
+"""Microsserviço de entrega: gera nota fiscal e anuncia que um pedido foi enviado."""
+
 import sys
+import time
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -10,10 +13,13 @@ KEYS_DIR = Path(__file__).resolve().parent / "keys"
 PRIVATE_KEY = KEYS_DIR / f"{SERVICE}_private.pem"
 
 
+# Quando o pagamento é aprovado, simula a emissão da nota fiscal e o despacho, e publica pedido.enviado.
 def handle_event(ch, method, properties, data):
     pedido_id = data.get("pedido_id")
     print(f" [x] Emitindo nota fiscal para pedido {pedido_id}...")
-    print(f" [x] Preparando entrega do pedido {pedido_id}...")
+    time.sleep(2)
+    print(f" [x] Despachando pedido {pedido_id}...")
+    time.sleep(2)
 
     publish_signed_event(
         ch,
@@ -26,6 +32,7 @@ def handle_event(ch, method, properties, data):
     print(f" [x] Pedido {pedido_id} enviado!")
 
 
+# Escuta apenas eventos de pedidos pagos com sucesso.
 def main():
     bindings = [(ECOMMERCE_EXCHANGE, "pagamento.aprovado")]
     start_consumer("Microsservico Entrega", "entrega_queue", bindings, KEYS_DIR, handle_event)

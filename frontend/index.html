@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Loja SD</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topo">
+    <div class="marca">Loja<span>SD</span></div>
+    <div class="topo-info">
+      <span class="cliente">Cliente <b id="cliente-id">—</b></span>
+      <span id="sse-status" class="sse off" title="Conexão SSE com o API Gateway">SSE desconectado</span>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="coluna-principal">
+      <div class="secao-titulo">
+        <h2>Catálogo</h2>
+        <div class="filtros" id="filtros">
+          <button class="chip ativo" data-categoria="">Todas</button>
+          <button class="chip" data-categoria="A">Categoria A</button>
+          <button class="chip" data-categoria="B">Categoria B</button>
+          <button class="chip" data-categoria="C">Categoria C</button>
+        </div>
+      </div>
+      <div id="produtos" class="grade-produtos"><p class="vazio">Carregando produtos…</p></div>
+
+      <div class="secao-titulo"><h2>Meus pedidos</h2></div>
+      <div id="pedidos" class="lista-pedidos"><p class="vazio">Nenhum pedido ainda.</p></div>
+    </section>
+
+    <aside class="coluna-lateral">
+      <div class="painel">
+        <h3>Carrinho</h3>
+        <ul id="carrinho" class="carrinho"></ul>
+        <div class="total"><span>Total</span><b id="carrinho-total">R$ 0,00</b></div>
+        <button id="finalizar" class="botao primario" disabled>Finalizar pedido</button>
+      </div>
+
+      <div class="painel">
+        <h3>Promoções por e-mail</h3>
+        <p class="ajuda">Escolha as categorias e receba ofertas no seu e-mail.</p>
+        <form id="form-interesse">
+          <input id="email" type="email" placeholder="seu@email.com" required>
+          <div class="checks">
+            <label><input type="checkbox" value="A"> A</label>
+            <label><input type="checkbox" value="B"> B</label>
+            <label><input type="checkbox" value="C"> C</label>
+          </div>
+          <div class="botoes-linha">
+            <button type="submit" class="botao primario">Inscrever</button>
+            <button type="button" id="cancelar-interesse" class="botao secundario">Cancelar</button>
+          </div>
+          <p class="ajuda">“Cancelar” remove as categorias marcadas (ou todas, se nenhuma estiver marcada).</p>
+        </form>
+      </div>
+    </aside>
+  </main>
+
+  <div id="toasts" class="toasts" aria-live="polite"></div>
+  <script src="app.js"></script>
+</body>
+</html>

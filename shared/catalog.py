@@ -1,3 +1,6 @@
+"""Catálogo de produtos e estoque inicial compartilhado por todos os microsserviços."""
+
+# Lista base de produtos do e-commerce.
 PRODUTOS = {
     1: {"nome": "Notebook", "categoria": "A", "preco": 3500.0},
     2: {"nome": "Mouse", "categoria": "A", "preco": 80.0},
@@ -7,6 +10,7 @@ PRODUTOS = {
     6: {"nome": "Fone Bluetooth", "categoria": "C", "preco": 199.9},
 }
 
+# Quantidade inicial disponível em estoque para cada produto.
 ESTOQUE_INICIAL = {
     1: 10,
     2: 50,
