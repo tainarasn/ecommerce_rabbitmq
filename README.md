@@ -130,6 +130,30 @@ Para voltar o estoque ao inicial, pare o MS Estoque e apague `estoque/estoque.db
 
 Toda mensagem vai no envelope `{"data": {...,"origin": "<serviço>"}, "Signature": "<RSA-SHA256 base64>"}`. Quem consome verifica a assinatura com a chave pública do serviço de origem (`shared/events.py`) e descarta a mensagem se ela for inválida.
 
+## RabbitMQ: o que veio do Trab1 e o que mudou
+
+A base de mensageria é a mesma do Trab1. O Trab2 acrescentou a camada web (REST, SSE, Webhook) **por cima** dela, sem trocar a comunicação entre os microsserviços.
+
+**O que continua igual**
+- O mesmo exchange **`eCommerce`** do tipo **Direct**, por onde passa todo o fluxo de pedidos.
+- As mesmas filas duráveis: `principal_queue`, `estoque_queue`, `pagamento_queue` e `entrega_queue`.
+- Os mesmos eventos do pedido: `pedido.criado`, `pedido.excluido`, `pedido.estoque_ok`, `estoque.indisponivel`, `pagamento.aprovado`, `pagamento.recusado` e `pedido.enviado`.
+- A mesma **assinatura digital RSA**: o envelope `{"data", "Signature"}`, as chaves geradas por `scripts/generate_keys.py` e a verificação em `shared/events.py`.
+- A mesma base em `shared/rabbit.py` (`connect`, `start_consumer`, `publish_signed_event`).
+
+**O que mudou**
+
+| Mudança | Por quê |
+| --- | --- |
+| Saiu o exchange **`Promocoes`** (Topic) e os consumidores C1/C2 | No Trab2 as promoções chegam ao cliente **por e-mail** (API Resend), não por consumidores do RabbitMQ |
+| Novo evento **`interesse.promocao`** e nova fila `promocoes_queue` | O enunciado pede que o Gateway publique o interesse e que o MS Promoções consuma |
+| Novo evento **`pagamento.link_gerado`** | O Pagamento usa esse evento para avisar o Gateway da URL do checkout, que segue por SSE até o frontend |
+| O Pagamento passou a escutar `pedido.excluido` | Para cancelar a cobrança se o cliente cancelar o pedido antes de pagar (o webhook atrasado recebe 409) |
+| Nova função `publish_once` | As rotas REST (Flask) rodam em outras threads, e o canal do pika **não é thread-safe**. Por isso cada publicação feita por uma rota abre a própria conexão |
+| O consumidor captura exceções no tratamento | Um erro num evento não derruba mais a thread que consome a fila |
+
+**Restos do Trab1 no broker:** o exchange `Promocoes` e as filas `promocoes_c1_queue`/`promocoes_c2_queue` ainda podem existir no RabbitMQ, mas nada usa mais. Dá para apagar pelo painel de gerenciamento (http://localhost:15672), se o plugin estiver ativo.
+
 ## Roteiro para a defesa (conceitos da aula)
 
 **REST / métodos HTTP**
