@@ -47,6 +47,8 @@ copy .env.example .env      # e preencha RESEND_API_KEY (opcional)
 
 Sem `RESEND_API_KEY`, o MS Promoções só **mostra no log** o e-mail que seria enviado. Com a chave, envia de verdade pela Resend. Sem domínio verificado, o remetente `onboarding@resend.dev` só entrega no e-mail do dono da conta Resend: usem esse e-mail na demonstração.
 
+O MS Promoções gera uma promoção a cada **2 minutos** (`PROMOCAO_INTERVALO=120`) e envia **no máximo 5 e-mails por pessoa** enquanto estiver rodando (`MAX_EMAILS_POR_PESSOA=5`). A contagem zera quando o serviço é reiniciado. O limite existe para não estourar a cota diária gratuita da Resend: passando dela, a API responde `429 daily_quota_exceeded`.
+
 ## Execução
 
 Tudo de uma vez (abre uma janela por processo):

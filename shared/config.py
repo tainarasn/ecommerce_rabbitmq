@@ -38,6 +38,9 @@ RESEND_API_KEY = os.getenv("RESEND_API_KEY", "")
 RESEND_FROM = os.getenv("RESEND_FROM", "E-commerce SD <onboarding@resend.dev>")
 
 # Intervalo (segundos) entre as promoções geradas pelo MS Promoções.
-PROMOCAO_INTERVALO = int(os.getenv("PROMOCAO_INTERVALO", "30"))
+PROMOCAO_INTERVALO = int(os.getenv("PROMOCAO_INTERVALO", "120"))
+
+# Máximo de e-mails por pessoa enquanto o MS Promoções estiver rodando (protege a cota da Resend).
+MAX_EMAILS_POR_PESSOA = int(os.getenv("MAX_EMAILS_POR_PESSOA", "5"))
 
 CATEGORIAS = ["A", "B", "C"]

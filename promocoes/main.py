@@ -13,7 +13,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import requests
 
 from shared.catalog import PRODUTOS
-from shared.config import CATEGORIAS, ESTOQUE_URL, PROMOCAO_INTERVALO, RESEND_API_KEY, RESEND_FROM
+from shared.config import CATEGORIAS, ESTOQUE_URL, MAX_EMAILS_POR_PESSOA, PROMOCAO_INTERVALO, RESEND_API_KEY, RESEND_FROM
 from shared.rabbit import ECOMMERCE_EXCHANGE, start_consumer
 
 SERVICE = "promocoes"
@@ -22,6 +22,10 @@ DB_PATH = Path(__file__).resolve().parent / "promocoes.db"
 
 RESEND_URL = "https://api.resend.com/emails"
 DESCONTOS = [10, 15, 20, 25, 30]
+
+# E-mails já enviados para cada pessoa desde que o serviço subiu (zera ao reiniciar).
+emails_enviados: dict[str, int] = {}
+emails_lock = threading.Lock()
 
 
 def conectar() -> sqlite3.Connection:
@@ -42,8 +46,21 @@ def inicializar_banco() -> None:
 # ---------------------------------------------------------------- E-mail (API externa)
 
 
+# Reserva uma vaga no limite de e-mails da pessoa; devolve False se ela já atingiu o máximo.
+def reservar_envio(destinatario: str) -> bool:
+    with emails_lock:
+        enviados = emails_enviados.get(destinatario, 0)
+        if enviados >= MAX_EMAILS_POR_PESSOA:
+            return False
+        emails_enviados[destinatario] = enviados + 1
+        return True
+
+
 # Envia o e-mail pela API REST da Resend. Sem RESEND_API_KEY, apenas mostra no log.
 def enviar_email(destinatario: str, assunto: str, html: str) -> None:
+    if not reservar_envio(destinatario):
+        print(f" [e-mail] Limite de {MAX_EMAILS_POR_PESSOA} e-mails atingido para {destinatario}. Nao enviado: {assunto}")
+        return
     if not RESEND_API_KEY:
         print(f" [e-mail simulado] Para: {destinatario} | Assunto: {assunto}")
         return
@@ -148,6 +165,7 @@ def main():
     threading.Thread(target=iniciar_consumidor, daemon=True).start()
     modo = "Resend" if RESEND_API_KEY else "simulado (defina RESEND_API_KEY no .env)"
     print(f" [*] Gerando promocoes a cada {PROMOCAO_INTERVALO}s. Envio de e-mail: {modo}")
+    print(f" [*] Limite: {MAX_EMAILS_POR_PESSOA} e-mails por pessoa enquanto o servico estiver rodando")
     try:
         while True:
             time.sleep(PROMOCAO_INTERVALO)
